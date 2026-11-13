@@ -1,0 +1,56 @@
+@startuml
+package domain {
+  class Course
+  class StudentProfile
+  class CourseProgress
+}
+package recommendation {
+  interface RecommendationStrategy
+  class InterestBasedRecommendationStrategy
+  class PerformanceBasedRecommendationStrategy
+  class RecommendationService
+}
+package course {
+  interface CourseComponent
+  class BaseCourse
+  abstract class CourseDecorator
+  class AdditionalMaterialsDecorator
+  class CertificateDecorator
+}
+package facade {
+  class EducationPlatformFacade
+  package port {
+    interface StudentFactoryPort
+    interface CourseBuilderPort
+    interface CourseCatalogPort
+    interface StudentDirectoryPort
+    interface EnrollmentPort
+    interface CourseExtensionStorePort
+    interface QuizSubsystemPort
+    interface GradeSubsystemPort
+    interface ProgressQueryPort
+  }
+}
+RecommendationStrategy <|.. InterestBasedRecommendationStrategy
+RecommendationStrategy <|.. PerformanceBasedRecommendationStrategy
+RecommendationService o--> RecommendationStrategy
+CourseComponent <|.. BaseCourse
+CourseComponent <|.. CourseDecorator
+CourseDecorator <|-- AdditionalMaterialsDecorator
+CourseDecorator <|-- CertificateDecorator
+BaseCourse --> Course
+EducationPlatformFacade --> RecommendationService
+EducationPlatformFacade --> CourseComponent : decorates/stores
+EducationPlatformFacade --> StudentFactoryPort
+EducationPlatformFacade --> CourseBuilderPort
+EducationPlatformFacade --> CourseCatalogPort
+EducationPlatformFacade --> StudentDirectoryPort
+EducationPlatformFacade --> EnrollmentPort
+EducationPlatformFacade --> CourseExtensionStorePort
+EducationPlatformFacade --> QuizSubsystemPort
+EducationPlatformFacade --> GradeSubsystemPort
+EducationPlatformFacade --> ProgressQueryPort
+note bottom of StudentFactoryPort : concrete Factory pending teammate integration
+note bottom of CourseBuilderPort : concrete Builder pending teammate integration
+note bottom of GradeSubsystemPort : concrete Observer pending teammate integration
+@enduml

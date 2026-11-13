@@ -1,0 +1,20 @@
+@startuml
+interface CourseComponent {
+  +course(): Course
+  +materials(): List<LearningMaterial>
+  +certificateEnabled(): boolean
+  +issueCertificate(studentId: StudentId, progress: CourseProgress): Optional<Certificate>
+}
+class BaseCourse
+abstract class CourseDecorator
+class AdditionalMaterialsDecorator
+class CertificateDecorator
+class Course
+CourseComponent <|.. BaseCourse
+CourseComponent <|.. CourseDecorator
+CourseDecorator <|-- AdditionalMaterialsDecorator
+CourseDecorator <|-- CertificateDecorator
+CourseDecorator o--> CourseComponent : delegate
+BaseCourse --> Course : adapts
+CourseDecorator ..> Course : delegates identity
+@enduml

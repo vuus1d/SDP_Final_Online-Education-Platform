@@ -1,0 +1,37 @@
+@startuml
+class EducationPlatformFacade {
+  +registerStudent(request: StudentRegistrationRequest): StudentProfile
+  +createCourse(draft: CourseDraft): Course
+  +getRecommendedCourses(studentId: StudentId, limit: int): List<CourseRecommendation>
+  +enrollStudent(studentId: StudentId, courseId: CourseId): void
+  +addCourseMaterials(courseId: CourseId, materials: List<LearningMaterial>): CourseComponent
+  +enableCourseCertificate(courseId: CourseId): CourseComponent
+  +submitQuiz(studentId: StudentId, courseId: CourseId, quizId: String, answers: Map): QuizResult
+  +assignGrade(grade: Grade): Grade
+  +getStudentProgress(studentId: StudentId, courseId: CourseId): CourseProgress
+  +requestCertificate(studentId: StudentId, courseId: CourseId): Optional<Certificate>
+}
+interface StudentFactoryPort
+interface CourseBuilderPort
+interface CourseCatalogPort
+interface StudentDirectoryPort
+interface EnrollmentPort
+interface CourseExtensionStorePort
+class RecommendationService
+interface QuizSubsystemPort
+interface GradeSubsystemPort
+interface ProgressQueryPort
+EducationPlatformFacade --> StudentFactoryPort
+EducationPlatformFacade --> CourseBuilderPort
+EducationPlatformFacade --> CourseCatalogPort
+EducationPlatformFacade --> StudentDirectoryPort
+EducationPlatformFacade --> EnrollmentPort
+EducationPlatformFacade --> CourseExtensionStorePort
+EducationPlatformFacade --> RecommendationService
+EducationPlatformFacade --> QuizSubsystemPort
+EducationPlatformFacade --> GradeSubsystemPort
+EducationPlatformFacade --> ProgressQueryPort
+note right of StudentFactoryPort : adapter contract; concrete Factory pending
+note right of CourseBuilderPort : adapter contract; concrete Builder pending
+note right of GradeSubsystemPort : adapter contract; Observer delivery belongs to injected subsystem
+@enduml

@@ -1,0 +1,5 @@
+target/
+*.class
+*.log
+.idea/workspace.xml
+.idea/shelf/

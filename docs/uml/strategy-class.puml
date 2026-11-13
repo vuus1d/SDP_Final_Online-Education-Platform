@@ -1,0 +1,23 @@
+@startuml
+interface RecommendationStrategy {
+  +recommend(student: StudentProfile, courses: Collection<Course>, limit: int): List<CourseRecommendation>
+  +name(): String
+}
+class InterestBasedRecommendationStrategy
+class PerformanceBasedRecommendationStrategy
+class RecommendationService {
+  -strategy: RecommendationStrategy
+  +setStrategy(strategy: RecommendationStrategy): void
+  +strategy(): RecommendationStrategy
+  +recommend(student: StudentProfile, courses: Collection<Course>, limit: int): List<CourseRecommendation>
+}
+class CourseRecommendation
+class StudentProfile
+class Course
+RecommendationStrategy <|.. InterestBasedRecommendationStrategy
+RecommendationStrategy <|.. PerformanceBasedRecommendationStrategy
+RecommendationService o--> RecommendationStrategy : current
+RecommendationStrategy ..> StudentProfile : reads
+RecommendationStrategy ..> Course : ranks
+RecommendationStrategy ..> CourseRecommendation : returns
+@enduml

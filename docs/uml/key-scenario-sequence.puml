@@ -1,0 +1,45 @@
+@startuml
+actor Teacher
+actor Student
+participant EducationPlatformFacade as Facade
+participant CourseBuilderPort as BuilderPort
+participant StudentFactoryPort as FactoryPort
+participant CourseCatalogPort as Catalog
+participant RecommendationService as Recommender
+participant RecommendationStrategy as Strategy
+participant EnrollmentPort as Enrollment
+participant CourseExtensionStorePort as Extensions
+participant QuizSubsystemPort as Quiz
+participant GradeSubsystemPort as Grades
+participant ProgressQueryPort as Progress
+
+Teacher -> Facade: createCourse(draft)
+Facade -> BuilderPort: build(draft)
+BuilderPort --> Facade: Course
+Facade -> Catalog: saveCourse(course)
+Facade -> Extensions: save(BaseCourse(course))
+Student -> Facade: registerStudent(request)
+Facade -> FactoryPort: createStudent(request)
+FactoryPort --> Facade: StudentProfile
+Student -> Facade: getRecommendedCourses(id, limit)
+Facade -> Catalog: availableCourses()
+Catalog --> Facade: courses
+Facade -> Recommender: recommend(student, courses, limit)
+Recommender -> Strategy: recommend(...)
+Strategy --> Recommender: ranked recommendations
+Recommender --> Facade: ranked recommendations
+Student -> Facade: enrollStudent(id, courseId)
+Facade -> Enrollment: enroll(id, courseId)
+Student -> Facade: addCourseMaterials(courseId, materials)
+Facade -> Extensions: find(courseId) / save(decorated)
+Student -> Facade: submitQuiz(...)
+Facade -> Quiz: submit(...)
+Quiz --> Facade: QuizResult
+Teacher -> Facade: assignGrade(grade)
+Facade -> Grades: assign(grade)
+note right of Grades : Observer delivery is pending teammate integration; facade delegates once
+Student -> Facade: requestCertificate(studentId, courseId)
+Facade -> Progress: progress(studentId, courseId)
+Progress --> Facade: complete progress
+Facade --> Student: certificate only when complete
+@enduml

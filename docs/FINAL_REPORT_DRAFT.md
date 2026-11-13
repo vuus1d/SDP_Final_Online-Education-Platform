@@ -232,7 +232,7 @@ The Facade exposes a single application API and delegates registration to `UserS
 - **Runtime:** `mvn package` succeeded. The executable JAR `target/eduplatform-1.0-SNAPSHOT.jar` was run with scripted input to load demo data and exit; it displayed the unified menu and returned exit code 0.
 - **Java:** The Maven compiler targets Java 21 with `maven.compiler.release=21`. The local runtime used for verification was OpenJDK 26.0.2.1; a local Java 21 runtime run was not performed.
 - **CI:** `.github/workflows/maven.yml` configures Temurin Java 21 and `mvn clean verify`. A successful hosted GitHub Actions run was not verified for this report.
-- **UML and PDF:** PlantUML rendered the diagrams. All 17 PDF pages were rendered and visually checked with macOS Quick Look.
+- **UML and PDF:** PlantUML rendered the diagrams. All 16 PDF pages were rendered and visually checked with macOS Quick Look.
 
 ## 9. Problems We Faced and Solutions
 

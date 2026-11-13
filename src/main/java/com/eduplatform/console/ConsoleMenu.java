@@ -223,7 +223,12 @@ public class ConsoleMenu {
         Grade grade = facade.submitQuiz(student.getId(), course.get().getId(), quiz.get().getTitle(), answers);
         int newNotifications = student.getNotifications().size() - notificationsBefore;
 
-        out.println("Quiz completed. Score: " + grade.getScoreSummary());
+        out.println("Quiz graded. Score: " + grade.getScoreSummary());
+        if (grade.isPassing()) {
+            out.printf("Quiz passed (minimum %d%%); completion recorded.%n", Quiz.PASSING_SCORE_PERCENT);
+        } else {
+            out.printf("Quiz below the %d%% pass mark; course progress is unchanged for this quiz.%n", Quiz.PASSING_SCORE_PERCENT);
+        }
         if (newNotifications > 0) {
             out.printf("Observer delivered %d new notification(s) to %s (see 'View Notifications').%n",
                     newNotifications, student.getName());
@@ -362,8 +367,12 @@ public class ConsoleMenu {
     private void markLessonComplete() {
         Optional<Student> student = chooseStudent(); if (student.isEmpty()) return;
         Optional<Course> course = chooseCourse(student.get().getEnrolledCourses(), "Student is not enrolled in any course."); if (course.isEmpty()) return;
-        Optional<Lesson> lesson = input.choose("Select completed lesson:", course.get().getLessons(), Lesson::getTitle, "Course has no lessons.");
-        lesson.ifPresent(value -> { facade.markLessonCompleted(student.get().getId(), course.get().getId(), value.getTitle()); out.println("Lesson completion recorded."); });
+        if (course.get().getLessons().isEmpty()) { out.println("Course has no lessons."); return; }
+        List<Lesson> lessons = course.get().getLessons();
+        for (int i = 0; i < lessons.size(); i++) out.printf("%d. %s%n", i + 1, lessons.get(i).getTitle());
+        int lessonNumber = input.readInt("Select completed lesson: ", 1, lessons.size());
+        facade.markLessonCompleted(student.get().getId(), course.get().getId(), lessonNumber);
+        out.println("Lesson completion recorded.");
     }
 
     private Optional<Student> chooseStudent() {

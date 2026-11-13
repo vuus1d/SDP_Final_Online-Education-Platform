@@ -18,6 +18,8 @@ CourseDecorator <|-- CertificateDecorator
 BaseCourse --> Course : wraps, never copies
 CourseDecorator o--> CourseComponent : delegates
 CertificateDecorator --> Student : enrollment required
-note bottom of CertificateDecorator : explicit request + 100% activity progress;
-same student receives same certificate on repeat
+note bottom of CertificateDecorator
+  Explicit request + 100% activity progress.
+  Same student receives same certificate on repeat.
+end note
 @enduml

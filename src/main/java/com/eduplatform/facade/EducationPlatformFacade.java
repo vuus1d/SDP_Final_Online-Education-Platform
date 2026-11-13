@@ -76,11 +76,10 @@ public final class EducationPlatformFacade {
         CourseProgress progress = progress(studentId, courseId);
         return component(courseId).issueCertificate(student, progress.completionPercent());
     }
-    public void markLessonCompleted(String studentId, String courseId, String lessonTitle) {
+    /** lessonNumber is one-based, matching the number shown in the console. */
+    public void markLessonCompleted(String studentId, String courseId, int lessonNumber) {
         Student student = requireStudent(studentId); Course course = requireCourse(courseId);
-        Lesson lesson = course.getLessons().stream().filter(item -> item.getTitle().equals(lessonTitle)).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Lesson is not part of this course"));
-        student.markLessonCompleted(course, lesson);
+        student.markLessonCompleted(course, lessonNumber - 1);
     }
     public void subscribe(Student student) { notifications.subscribe(student); }
     public void subscribe(String studentId) { notifications.subscribe(requireStudent(studentId)); }

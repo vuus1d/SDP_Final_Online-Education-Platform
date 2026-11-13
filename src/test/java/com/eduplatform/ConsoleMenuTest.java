@@ -42,7 +42,8 @@ class ConsoleMenuTest {
                 "0");
 
         assertTrue(output.contains("Demo data loaded"));
-        assertTrue(output.contains("Quiz completed. Score: 3/3 (100%)"));
+        assertTrue(output.contains("Quiz graded. Score: 3/3 (100%)"));
+        assertTrue(output.contains("Quiz passed (minimum 70%); completion recorded."));
         assertTrue(output.contains("Observer delivered 1 new notification(s) to Nurasyl"));
         assertTrue(output.contains("Course: Java Programming | Quiz: Java Basics Quiz | Score: 3/3 (100%)"));
         assertTrue(output.contains("Goodbye!"));
@@ -96,7 +97,8 @@ class ConsoleMenuTest {
         assertTrue(output.contains("Student subscribed to grade notifications."));
         assertTrue(output.contains("Course created successfully: CRS-1 Java [BEGINNER, 30 h] by John"));
         assertTrue(output.contains("Nurasyl enrolled in 'Java'."));
-        assertTrue(output.contains("Quiz completed. Score: 0/1 (0%)"));
+        assertTrue(output.contains("Quiz graded. Score: 0/1 (0%)"));
+        assertTrue(output.contains("Quiz below the 70% pass mark; course progress is unchanged for this quiz."));
         assertTrue(output.contains("Java | Quiz 1 | 0/1 (0%)"));
     }
 

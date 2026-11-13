@@ -1,26 +1,27 @@
 @startuml
-actor Student
+actor Presenter
 participant ConsoleMenu
-participant EducationPlatformFacade
+participant EducationPlatformFacade as Facade
 participant QuizService
 participant GradeService
-participant StudentNotificationObserver
-participant CourseProgress
+participant StudentNotificationObserver as Observer
+participant Student
 participant CertificateDecorator
-Student -> ConsoleMenu : choose Complete Quiz
-ConsoleMenu -> EducationPlatformFacade : submitQuiz(student, course, answers)
-EducationPlatformFacade -> QuizService : submitQuiz(...)
+Presenter -> ConsoleMenu : submit quiz answers
+ConsoleMenu -> Facade : submitQuiz(student, course, quiz, answers)
+Facade -> QuizService : submitQuiz(...)
 QuizService -> GradeService : recordGrade(grade)
-GradeService -> StudentNotificationObserver : onGradePublished(grade)
-StudentNotificationObserver -> Student : receiveNotification
-QuizService --> EducationPlatformFacade : saved Grade
-EducationPlatformFacade --> ConsoleMenu : Grade
-Student -> ConsoleMenu : finish remaining lessons, request certificate
-ConsoleMenu -> EducationPlatformFacade : progress(student, course)
-EducationPlatformFacade --> ConsoleMenu : actual completion percent
-ConsoleMenu -> EducationPlatformFacade : requestCertificate(student, course)
-EducationPlatformFacade -> CertificateDecorator : issueCertificate(student, progress)
-CertificateDecorator -> CertificateDecorator : check enrollment and 100%; reuse prior issuance
-CertificateDecorator --> EducationPlatformFacade : Certificate or empty
-EducationPlatformFacade --> ConsoleMenu : result
+GradeService -> Observer : onGradePublished(grade)
+Observer -> Student : receiveNotification(notification)
+QuizService -> QuizService : mark complete only if score >= 70%
+QuizService --> Facade : saved Grade
+Facade --> ConsoleMenu : grade and pass/fail status
+Presenter -> ConsoleMenu : complete lessons, request certificate
+ConsoleMenu -> Facade : progress(student, course)
+Facade --> ConsoleMenu : progress from lesson positions and passed quizzes
+ConsoleMenu -> Facade : requestCertificate(student, course)
+Facade -> CertificateDecorator : issueCertificate(student, progress)
+CertificateDecorator -> CertificateDecorator : check enrollment, 100%, prior issuance
+CertificateDecorator --> Facade : existing/new certificate or empty
+Facade --> ConsoleMenu : result
 @enduml

@@ -50,7 +50,7 @@ class IntegratedPatternsTest {
         assertEquals(1, facade.notifications(student.getId()).size());
         assertThrows(IllegalStateException.class, () -> grades.recordGrade(grade), "The same saved grade event cannot be published twice");
         assertEquals(1, facade.notifications(student.getId()).size());
-        facade.markLessonCompleted(student.getId(), course.getId(), "Lesson 1");
+        facade.markLessonCompleted(student.getId(), course.getId(), 1);
         assertEquals(100, facade.progress(student.getId(), course.getId()).completionPercent());
         var first = facade.requestCertificate(student.getId(), course.getId()).orElseThrow();
         var second = facade.requestCertificate(student.getId(), course.getId()).orElseThrow();

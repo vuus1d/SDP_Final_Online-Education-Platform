@@ -32,7 +32,7 @@ public class QuizService {
         int correctAnswers = quiz.countCorrectAnswers(answers);
         Grade grade = new Grade(student, course, quiz, correctAnswers, LocalDateTime.now());
         gradeService.recordGrade(grade);
-        student.markQuizCompleted(course, quiz);
+        student.markQuizCompleted(course, quiz, grade);
         return grade;
     }
 }

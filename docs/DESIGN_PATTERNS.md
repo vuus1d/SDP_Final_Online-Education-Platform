@@ -10,7 +10,7 @@
 
 ## Observer
 
-`GradeService` implements `GradeSubject` and stores validated grades before publishing them once. `StudentNotificationObserver` listens for grade events and sends a notification only to its bound student. `NotificationService` handles subscription and unsubscription.
+`GradeService` implements `GradeSubject` and stores validated grades before publishing them once. It isolates and records observer runtime exceptions, then continues notifying later subscribers; a failed observer cannot roll back the grade or prevent QuizService from updating completion. `StudentNotificationObserver` listens for grade events and sends a notification only to its bound student. `NotificationService` handles subscription and unsubscription.
 
 ## Strategy
 
@@ -26,4 +26,4 @@
 
 ## Coordination
 
-Factory creates the Student and Teacher. Builder creates a Course registered by CourseService. Strategy reads the same Course and Student data. Decorator wraps that Course. Facade coordinates enrollment and quiz submission. QuizService records a Grade once; Observer notifies the correct Student. Student activity state drives progress and certificate eligibility.
+Factory creates the Student and Teacher. Builder creates a Course registered by CourseService. Strategy reads the same Course and Student data. Decorator wraps that Course. Facade coordinates enrollment and quiz submission. QuizService records a Grade once; Observer notifies the correct Student. Quiz completion requires at least 70% on the rounded grade. Student activity positions drive progress and certificate eligibility.

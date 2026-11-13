@@ -1,7 +1,15 @@
 @startuml
 class EducationPlatformFacade {
+ -users: UserService
+ -courses: CourseService
+ -quizzes: QuizService
+ -grades: GradeService
+ -notifications: NotificationService
+ -recommendations: RecommendationService
+ -decoratedCourses: Map<String, CourseComponent>
  +registerUser(role, name, email): User
  +createCourse(teacherId, configure): Course
+ +setInterests(studentId, interests)
  +enroll(studentId, courseId)
  +recommend(studentId, limit)
  +addMaterials(courseId, materials)
@@ -11,6 +19,7 @@ class EducationPlatformFacade {
  +notifications(studentId)
  +progress(studentId, courseId): CourseProgress
  +requestCertificate(studentId, courseId)
+ +markLessonCompleted(studentId, courseId, lessonNumber)
 }
 class UserService
 class CourseService
@@ -19,13 +28,25 @@ class GradeService
 class NotificationService
 class RecommendationService
 interface CourseComponent
+interface GradeObserver
+interface GradeSubject
+class StudentNotificationObserver
+class Student
 EducationPlatformFacade --> UserService
 EducationPlatformFacade --> CourseService
 EducationPlatformFacade --> QuizService
 EducationPlatformFacade --> GradeService
 EducationPlatformFacade --> NotificationService
 EducationPlatformFacade --> RecommendationService
-EducationPlatformFacade --> CourseComponent : decorates
-QuizService --> GradeService : one grade event
-GradeService --> NotificationService : observer event
+EducationPlatformFacade o--> CourseComponent : stores decorated course
+QuizService --> GradeService : records grade once
+GradeService ..|> GradeSubject
+GradeService o--> "*" GradeObserver : notifies
+StudentNotificationObserver ..|> GradeObserver
+StudentNotificationObserver --> Student : delivers notification
+NotificationService ..> GradeSubject : subscribe / unsubscribe
+UserService ..> UserFactory : creates roles
+CourseService ..> Course.Builder : builds course
+CourseComponent --> Course
+note right of EducationPlatformFacade : Cross-service API; business rules remain in services and domain.
 @enduml

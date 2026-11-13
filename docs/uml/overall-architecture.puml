@@ -1,27 +1,35 @@
 @startuml
 package "com.eduplatform.model" {
  class Course
+ class "Course.Builder" as CourseBuilder
  class Student
  class Grade
  class User
  class Teacher
+ class Admin
  class Quiz
+ class Lesson
+ class Certificate
+ class LearningMaterial
+ class CourseProgress
+ class Notification
 }
-package "com.eduplatform.builder" {
- class "Course.Builder" as Builder
+package "com.eduplatform.factory" {
+ class UserFactory
 }
-package "com.eduplatform.factory" { class UserFactory }
 package "com.eduplatform.observer" {
  interface GradeSubject
  interface GradeObserver
  class GradeService
  class StudentNotificationObserver
+ class ObserverFailure
 }
 package "com.eduplatform.recommendation" {
  interface RecommendationStrategy
  class InterestBasedRecommendationStrategy
  class PerformanceBasedRecommendationStrategy
  class RecommendationService
+ class StudentRecommendationProfile
 }
 package "com.eduplatform.decorator" {
  interface CourseComponent
@@ -30,34 +38,74 @@ package "com.eduplatform.decorator" {
  class AdditionalMaterialsDecorator
  class CertificateDecorator
 }
-package "com.eduplatform.facade" { class EducationPlatformFacade }
-package "com.eduplatform.service" { class UserService; class CourseService; class QuizService; class NotificationService }
-package "com.eduplatform.console" { class ConsoleMenu }
-package "com.eduplatform" { class Main }
+package "com.eduplatform.service" {
+ class UserService
+ class CourseService
+ class QuizService
+ class NotificationService
+}
+package "com.eduplatform.console" {
+ class ConsoleMenu
+ class CourseCreationWizard
+}
+package "com.eduplatform.facade" {
+ class EducationPlatformFacade
+}
+package "com.eduplatform" {
+ class Main
+}
 RecommendationStrategy <|.. InterestBasedRecommendationStrategy
 RecommendationStrategy <|.. PerformanceBasedRecommendationStrategy
-RecommendationService --> RecommendationStrategy
+RecommendationService o--> RecommendationStrategy
+RecommendationService --> StudentRecommendationProfile
+StudentRecommendationProfile --> Student
 CourseComponent <|.. BaseCourse
 CourseComponent <|.. CourseDecorator
 CourseDecorator <|-- AdditionalMaterialsDecorator
 CourseDecorator <|-- CertificateDecorator
 BaseCourse --> Course
+CourseDecorator --> CourseComponent : delegates
+AdditionalMaterialsDecorator ..> LearningMaterial
+CertificateDecorator ..> Certificate
+CertificateDecorator --> Student : requires enrollment
+CourseBuilder --> Course
+CourseBuilder ..> Lesson
+CourseBuilder ..> Quiz
+CourseBuilder ..> Teacher
+User <|-- Student
+User <|-- Teacher
+User <|-- Admin
 GradeSubject <|.. GradeService
 GradeObserver <|.. StudentNotificationObserver
+GradeService o--> "*" GradeObserver
 GradeService --> Grade
+GradeService ..> ObserverFailure : records callback errors
 StudentNotificationObserver --> Student
-Builder --> Course
-UserFactory --> User
-CourseService --> Builder
+StudentNotificationObserver ..> Notification
+NotificationService --> GradeSubject : subscribes/unsubscribes
+NotificationService ..> StudentNotificationObserver : creates per subscriber
+UserService ..> UserFactory
+CourseService ..> CourseBuilder
 QuizService --> GradeService
-NotificationService --> GradeService
 EducationPlatformFacade --> UserService
 EducationPlatformFacade --> CourseService
 EducationPlatformFacade --> QuizService
 EducationPlatformFacade --> GradeService
 EducationPlatformFacade --> NotificationService
 EducationPlatformFacade --> RecommendationService
-EducationPlatformFacade --> CourseComponent
+EducationPlatformFacade o--> CourseComponent
+CourseCreationWizard --> EducationPlatformFacade
+CourseCreationWizard --> UserService : lists teachers
 ConsoleMenu --> EducationPlatformFacade
+ConsoleMenu --> UserService
+ConsoleMenu --> CourseService
+ConsoleMenu --> QuizService
+ConsoleMenu --> GradeService
+ConsoleMenu --> NotificationService
 Main --> ConsoleMenu
+Main ..> UserService : wires services
+Main ..> CourseService
+Main ..> QuizService
+Main ..> GradeService
+Main ..> NotificationService
 @enduml

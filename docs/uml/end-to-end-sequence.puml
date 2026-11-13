@@ -3,7 +3,7 @@ actor Presenter
 participant ConsoleMenu
 participant EducationPlatformFacade as Facade
 participant UserFactory
-participant Course.Builder as Builder
+participant "Course.Builder" as Builder
 participant CourseService
 participant RecommendationService as Recommendations
 participant CourseDecorator as Decorator
@@ -29,8 +29,13 @@ ConsoleMenu -> Facade : submitQuiz(...)
 Facade -> QuizService : calculate score
 QuizService -> GradeService : recordGrade(Grade)
 GradeService -> Observer : publish once
-Observer --> ConsoleMenu : student notification stored
+Observer -> Observer : catch and record callback failures
+Presenter -> ConsoleMenu : view grade and notifications
+ConsoleMenu -> Facade : grades(student), notifications(student)
+Facade -> GradeService : query persisted grades
+Facade -> NotificationService : query student inbox
 Presenter -> ConsoleMenu : complete lessons / request certificate
 ConsoleMenu -> Facade : progress / requestCertificate
 Facade --> ConsoleMenu : progress and eligible certificate
+note over QuizService, GradeService : Passing rule: rounded score >= 70%. All grades are saved; only passing quizzes count toward progress.
 @enduml

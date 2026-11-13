@@ -4,22 +4,40 @@ interface GradeSubject {
  +unsubscribe(GradeObserver)
  +notifyObservers(Grade)
 }
-interface GradeObserver { +onGradePublished(Grade) }
+interface GradeObserver {
+ +onGradePublished(Grade)
+}
 class GradeService {
  +recordGrade(Grade)
- +getGradesForStudent(Student)
+ +getObserverFailures(): List<ObserverFailure>
 }
 class StudentNotificationObserver {
  -student: Student
  +onGradePublished(Grade)
 }
-class NotificationService
+class NotificationService {
+ -gradeSubject: GradeSubject
+ -observersByStudent: Map<Student, StudentNotificationObserver>
+}
+class ObserverFailure {
+ +grade: Grade
+ +observerClass: String
+ +cause: RuntimeException
+}
 class Grade
 class Student
 GradeSubject <|.. GradeService
 GradeObserver <|.. StudentNotificationObserver
-GradeService o--> "*" GradeObserver
-GradeService --> Grade : saves/publishes
-StudentNotificationObserver --> Student : notifies matching student
-NotificationService --> GradeService : subscribe/unsubscribe
+GradeService "1" o--> "0..*" GradeObserver : subscribers
+GradeService --> "*" Grade : saves
+StudentNotificationObserver --> Student : calls receiveNotification
+NotificationService --> GradeSubject : manages subscription
+NotificationService ..> StudentNotificationObserver : creates per student
+GradeService --> ObserverFailure : records callback failures
+note right of GradeService
+  Commits grade first.
+  Isolates runtime observer errors.
+  Continues through the subscriber snapshot.
+  A saved grade event can be published once.
+end note
 @enduml

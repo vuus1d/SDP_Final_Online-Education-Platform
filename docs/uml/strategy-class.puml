@@ -11,11 +11,17 @@ class RecommendationService {
 }
 class StudentRecommendationProfile
 class Course
+class Student
+class Grade
 RecommendationStrategy <|.. InterestBasedRecommendationStrategy
 RecommendationStrategy <|.. PerformanceBasedRecommendationStrategy
 RecommendationService o--> RecommendationStrategy
 RecommendationService --> StudentRecommendationProfile
 RecommendationService --> Course
-note right of StudentRecommendationProfile : wraps canonical Student;
-performance comes from saved Grades
+StudentRecommendationProfile --> Student
+StudentRecommendationProfile ..> Grade : performance averaged by Facade
+note right of StudentRecommendationProfile
+  Wraps canonical Student.
+  Performance comes from saved Grades.
+end note
 @enduml

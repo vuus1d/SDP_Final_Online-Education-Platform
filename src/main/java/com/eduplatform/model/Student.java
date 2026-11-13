@@ -13,9 +13,9 @@ public class Student extends User {
 
     private final List<Course> enrolledCourses = new ArrayList<>();
     private final List<Notification> notifications = new ArrayList<>();
-    private final Set<String> interests = new LinkedHashSet<>();
-    private final Map<String, Set<String>> completedQuizzes = new HashMap<>();
-    private final Map<String, Set<String>> completedLessons = new HashMap<>();
+    private volatile Set<String> interests = Set.of();
+    private final Map<String, Set<Quiz>> completedQuizzes = new HashMap<>();
+    private final Map<String, Set<Integer>> completedLessonIndexes = new HashMap<>();
 
     public Student(String id, String name, String email) {
         super(id, name, email);
@@ -62,24 +62,32 @@ public class Student extends User {
 
     public void setInterests(Set<String> values) {
         Objects.requireNonNull(values, "Interests must not be null");
-        interests.clear();
+        Set<String> normalized = new LinkedHashSet<>();
         values.stream().map(value -> {
             if (value == null || value.isBlank()) throw new IllegalArgumentException("Interest must not be blank");
             return value.trim().toLowerCase(java.util.Locale.ROOT);
-        }).forEach(interests::add);
+        }).forEach(normalized::add);
+        interests = Collections.unmodifiableSet(normalized);
     }
-    public Set<String> getInterests() { return Collections.unmodifiableSet(interests); }
-    public void markQuizCompleted(Course course, Quiz quiz) {
+    public Set<String> getInterests() { return interests; }
+    public void markQuizCompleted(Course course, Quiz quiz, Grade grade) {
         if (!isEnrolledIn(course) || !course.containsQuiz(quiz)) throw new IllegalArgumentException("Quiz/course enrollment mismatch");
-        completedQuizzes.computeIfAbsent(course.getId(), ignored -> new LinkedHashSet<>()).add(quiz.getTitle());
+        Objects.requireNonNull(grade, "Grade must not be null");
+        if (!grade.getStudent().equals(this) || !grade.getCourse().equals(course) || grade.getQuiz() != quiz) {
+            throw new IllegalArgumentException("Grade does not match this student, course, and quiz");
+        }
+        if (grade.getScorePercentage() < Quiz.PASSING_SCORE_PERCENT) return;
+        completedQuizzes.computeIfAbsent(course.getId(), ignored -> new LinkedHashSet<>()).add(quiz);
     }
-    public void markLessonCompleted(Course course, Lesson lesson) {
-        if (!isEnrolledIn(course) || !course.getLessons().contains(lesson)) throw new IllegalArgumentException("Lesson/course enrollment mismatch");
-        completedLessons.computeIfAbsent(course.getId(), ignored -> new LinkedHashSet<>()).add(lesson.getTitle());
+    public void markLessonCompleted(Course course, int lessonIndex) {
+        if (!isEnrolledIn(course) || lessonIndex < 0 || lessonIndex >= course.getLessons().size()) {
+            throw new IllegalArgumentException("Lesson/course enrollment mismatch");
+        }
+        completedLessonIndexes.computeIfAbsent(course.getId(), ignored -> new LinkedHashSet<>()).add(lessonIndex);
     }
     public int getCompletedActivities(Course course) {
         return completedQuizzes.getOrDefault(course.getId(), Set.of()).size()
-                + completedLessons.getOrDefault(course.getId(), Set.of()).size();
+                + completedLessonIndexes.getOrDefault(course.getId(), Set.of()).size();
     }
     public boolean hasCompletedCourse(Course course) {
         int total = course.getQuizzes().size() + course.getLessons().size();

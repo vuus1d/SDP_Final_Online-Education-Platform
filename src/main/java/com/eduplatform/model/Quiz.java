@@ -4,6 +4,9 @@ import java.util.List;
 
 public final class Quiz {
 
+    /** A quiz attempt passes when its rounded score is at least this percentage. */
+    public static final int PASSING_SCORE_PERCENT = 70;
+
     private final String title;
     private final List<Question> questions;
 

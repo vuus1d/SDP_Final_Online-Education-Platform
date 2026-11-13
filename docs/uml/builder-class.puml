@@ -2,27 +2,35 @@
 class Course {
  -id: String
  -title: String
+ -teacher: Teacher
  -lessons: List<Lesson>
  -quizzes: List<Quiz>
- -teacher: Teacher
  -topics: Set<String>
+ -minimumPerformance: int
  -available: boolean
 }
-class "Course.Builder" as Builder {
- +setId(String): Builder
- +setTitle(String): Builder
- +setDescription(String): Builder
- +setTeacher(Teacher): Builder
- +addLesson(Lesson): Builder
- +addQuiz(Quiz): Builder
- +addTopic(String): Builder
- +setMinimumPerformance(int): Builder
+class "Course.Builder" as CourseBuilder {
+ +setId(String): CourseBuilder
+ +setTitle(String): CourseBuilder
+ +setDescription(String): CourseBuilder
+ +setTeacher(Teacher): CourseBuilder
+ +addLesson(Lesson): CourseBuilder
+ +addQuiz(Quiz): CourseBuilder
+ +setDuration(int): CourseBuilder
+ +setDifficultyLevel(DifficultyLevel): CourseBuilder
+ +addTopic(String): CourseBuilder
+ +setMinimumPerformance(int): CourseBuilder
+ +setAvailable(boolean): CourseBuilder
  +build(): Course
 }
 class CourseCreationWizard
-Course +-- Builder
-CourseCreationWizard --> Builder : configures
-Builder ..> Lesson
-Builder ..> Quiz
-Builder ..> Teacher
+class EducationPlatformFacade
+class CourseService
+Course +-- CourseBuilder : static nested builder
+CourseBuilder ..> Lesson
+CourseBuilder ..> Quiz
+CourseBuilder ..> Teacher
+CourseCreationWizard --> EducationPlatformFacade : createCourse(configure)
+EducationPlatformFacade --> CourseService
+CourseService ..> CourseBuilder : creates/configures
 @enduml

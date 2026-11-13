@@ -52,6 +52,10 @@ public final class Grade {
         return (int) Math.round(correctAnswers * (double) PERCENT / getTotalQuestions());
     }
 
+    public boolean isPassing() {
+        return getScorePercentage() >= Quiz.PASSING_SCORE_PERCENT;
+    }
+
     public String getScoreSummary() {
         return String.format("%d/%d (%d%%)", correctAnswers, getTotalQuestions(), getScorePercentage());
     }

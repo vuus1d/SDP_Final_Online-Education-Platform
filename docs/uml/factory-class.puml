@@ -5,18 +5,18 @@ class Teacher
 class Admin
 enum UserRole
 class UserFactory {
- +createUser(role, name, email): User
- +createStudent(name, email): Student
- +createTeacher(name, email): Teacher
- +createAdmin(name, email): Admin
+ {static} +createUser(role, name, email): User
+ {static} +createStudent(name, email): Student
+ {static} +createTeacher(name, email): Teacher
+ {static} +createAdmin(name, email): Admin
 }
 class UserService
 User <|-- Student
 User <|-- Teacher
 User <|-- Admin
-UserFactory ..> UserRole
+UserFactory ..> UserRole : switches on
 UserFactory ..> Student : creates
 UserFactory ..> Teacher : creates
 UserFactory ..> Admin : creates
-UserService --> UserFactory
+UserService ..> UserFactory : calls createUser
 @enduml

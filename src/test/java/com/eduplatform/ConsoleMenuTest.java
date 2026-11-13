@@ -1,0 +1,102 @@
+package com.eduplatform;
+
+import com.eduplatform.console.ConsoleInput;
+import com.eduplatform.console.ConsoleMenu;
+import com.eduplatform.observer.GradeService;
+import com.eduplatform.service.CourseService;
+import com.eduplatform.service.NotificationService;
+import com.eduplatform.service.QuizService;
+import com.eduplatform.service.UserService;
+import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/** Drives the real console menu with scripted input. */
+class ConsoleMenuTest {
+
+    private String runWithInput(String... lines) {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(buffer, true, StandardCharsets.UTF_8);
+        GradeService gradeService = new GradeService();
+        ConsoleInput input = new ConsoleInput(new Scanner(String.join("\n", lines) + "\n"), out);
+        new ConsoleMenu(input, out, new UserService(), new CourseService(), new QuizService(gradeService),
+                gradeService, new NotificationService(gradeService)).run();
+        return buffer.toString(StandardCharsets.UTF_8);
+    }
+
+    @Test
+    void demoWorkflowProducesNotification() {
+        String output = runWithInput(
+                "12",                // load demo data
+                "7", "1", "1", "1",  // complete quiz: student Nurasyl, course, Java Basics Quiz
+                "2", "1", "2",       // all answers correct
+                "9", "1",            // view Nurasyl's notifications
+                "0");
+
+        assertTrue(output.contains("Demo data loaded"));
+        assertTrue(output.contains("Quiz completed. Score: 3/3 (100%)"));
+        assertTrue(output.contains("Observer delivered 1 new notification(s) to Nurasyl"));
+        assertTrue(output.contains("Course: Java Programming | Quiz: Java Basics Quiz | Score: 3/3 (100%)"));
+        assertTrue(output.contains("Goodbye!"));
+    }
+
+    @Test
+    void registersUsersAndBuildsCourseInteractively() {
+        String output = runWithInput(
+                "1", "2", "John", "john@example.com",           // register teacher
+                "1", "1", "Nurasyl", "nurasyl@example.com",     // register student
+                "3", "1", "Java", "Basics", "30", "1",          // create course: teacher, title, desc, hours, BEGINNER
+                "Intro", "Hello Java", "45", "n",               // one lesson
+                "y", "Quiz 1", "2+2?", "2", "4", "5", "1", "n", // one quiz with one question
+                "n",                                            // no more quizzes
+                "5", "1", "1",                                  // enroll student
+                "7", "1", "1", "1", "2",                        // take quiz, answer wrong
+                "8", "1",                                       // view grades
+                "0");
+
+        assertTrue(output.contains("Student subscribed to grade notifications."));
+        assertTrue(output.contains("Course created successfully: CRS-1 Java [BEGINNER, 30 h] by John"));
+        assertTrue(output.contains("Nurasyl enrolled in 'Java'."));
+        assertTrue(output.contains("Quiz completed. Score: 0/1 (0%)"));
+        assertTrue(output.contains("Java | Quiz 1 | 0/1 (0%)"));
+    }
+
+    @Test
+    void invalidInputDoesNotCrashTheApplication() {
+        String output = runWithInput(
+                "abc", "99",                               // invalid menu choices
+                "1", "4", "1", "X", "not-an-email", // invalid role number, then invalid email
+                "7",                                       // complete quiz with no students
+                "0");
+
+        assertTrue(output.contains("Please enter a whole number between 0 and 12."));
+        assertTrue(output.contains("Error: Invalid email address"));
+        assertTrue(output.contains("No students registered yet."));
+        assertTrue(output.contains("Goodbye!"));
+    }
+
+    @Test
+    void demoDataIsNotPartiallyLoadedWhenAnEmailIsTaken() {
+        String output = runWithInput(
+                "1", "2", "John", "john@example.com", // same email as the demo teacher
+                "12",                                 // load demo data -> rejected
+                "2",                                  // view all users
+                "0");
+
+        assertTrue(output.contains("Error: Cannot load demo data: email 'john@example.com' is already registered"));
+        assertFalse(output.contains("Platform Admin"));
+    }
+
+    @Test
+    void endOfInputExitsGracefully() {
+        String output = runWithInput("2");
+
+        assertTrue(output.contains("Input closed."));
+    }
+}

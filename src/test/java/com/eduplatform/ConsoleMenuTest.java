@@ -13,6 +13,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -47,11 +49,42 @@ class ConsoleMenuTest {
     }
 
     @Test
+    void fullIntegratedWorkflowRunsThroughScriptedConsoleInput() {
+        ArrayList<String> script = new ArrayList<>(List.of(
+                "12",                         // demo data: Factory + Builder + Observer subscriptions
+                "13", "1", "java, oop",      // real interests
+                "14", "1",                   // interest recommendations
+                "15", "2",                   // runtime switch to performance strategy
+                "16", "1", "Study notes", "notes.pdf",
+                "17", "1",                   // materials
+                "18", "1",                   // certificate capability
+                "20", "1", "1", "1",        // mark each of three lessons complete
+                "20", "1", "1", "2",
+                "20", "1", "1", "3",
+                "7", "1", "1", "1", "2", "1", "2", // complete first quiz
+                "7", "1", "1", "2", "2", "2",      // complete second quiz
+                "19", "1", "1", "y",        // real progress and explicit certificate request
+                "8", "1",                     // grades
+                "9", "1",                     // notifications
+                "0"));
+        String output = runWithInput(script.toArray(String[]::new));
+        assertTrue(output.contains("Demo data loaded"));
+        assertTrue(output.contains("Matches interest: java"));
+        assertTrue(output.contains("Additional material added."));
+        assertTrue(output.contains("Certificate support enabled."));
+        assertTrue(output.contains("Progress: 100%"));
+        assertTrue(output.contains("Certificate: "));
+        assertTrue(output.contains("Observer delivered 1 new notification(s)"));
+        assertTrue(output.contains("Notifications for Nurasyl:"));
+        assertTrue(output.contains("Goodbye!"));
+    }
+
+    @Test
     void registersUsersAndBuildsCourseInteractively() {
         String output = runWithInput(
                 "1", "2", "John", "john@example.com",           // register teacher
                 "1", "1", "Nurasyl", "nurasyl@example.com",     // register student
-                "3", "1", "Java", "Basics", "30", "1",          // create course: teacher, title, desc, hours, BEGINNER
+                "3", "1", "Java", "Basics", "30", "1", "Java", "0", // course plus recommendation topic/readiness
                 "Intro", "Hello Java", "45", "n",               // one lesson
                 "y", "Quiz 1", "2+2?", "2", "4", "5", "1", "n", // one quiz with one question
                 "n",                                            // no more quizzes
@@ -75,7 +108,7 @@ class ConsoleMenuTest {
                 "7",                                       // complete quiz with no students
                 "0");
 
-        assertTrue(output.contains("Please enter a whole number between 0 and 12."));
+        assertTrue(output.contains("Please enter a whole number between 0 and 20."));
         assertTrue(output.contains("Error: Invalid email address"));
         assertTrue(output.contains("No students registered yet."));
         assertTrue(output.contains("Goodbye!"));

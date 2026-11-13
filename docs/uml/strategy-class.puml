@@ -1,0 +1,21 @@
+@startuml
+interface RecommendationStrategy {
+ +recommend(profile, courses, limit): List<CourseRecommendation>
+}
+class InterestBasedRecommendationStrategy
+class PerformanceBasedRecommendationStrategy
+class RecommendationService {
+ -strategy: RecommendationStrategy
+ +setStrategy(strategy)
+ +recommend(profile, courses, limit)
+}
+class StudentRecommendationProfile
+class Course
+RecommendationStrategy <|.. InterestBasedRecommendationStrategy
+RecommendationStrategy <|.. PerformanceBasedRecommendationStrategy
+RecommendationService o--> RecommendationStrategy
+RecommendationService --> StudentRecommendationProfile
+RecommendationService --> Course
+note right of StudentRecommendationProfile : wraps canonical Student;
+performance comes from saved Grades
+@enduml

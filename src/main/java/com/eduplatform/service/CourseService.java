@@ -39,10 +39,12 @@ public class CourseService {
     public void enroll(Student student, Course course) {
         Objects.requireNonNull(student, "Student must not be null");
         Objects.requireNonNull(course, "Course must not be null");
-        if (!coursesById.containsKey(course.getId())) {
+        Course registered = coursesById.get(course.getId());
+        if (registered == null) {
             throw new IllegalArgumentException("Course '" + course.getTitle() + "' is not registered on the platform");
         }
-        student.enroll(course);
+        if (!registered.isAvailable()) throw new IllegalStateException("Course '" + course.getTitle() + "' is unavailable");
+        student.enroll(registered);
     }
 
     public Optional<Course> findById(String id) {

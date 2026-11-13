@@ -1,0 +1,28 @@
+@startuml
+class Course {
+ -id: String
+ -title: String
+ -lessons: List<Lesson>
+ -quizzes: List<Quiz>
+ -teacher: Teacher
+ -topics: Set<String>
+ -available: boolean
+}
+class "Course.Builder" as Builder {
+ +setId(String): Builder
+ +setTitle(String): Builder
+ +setDescription(String): Builder
+ +setTeacher(Teacher): Builder
+ +addLesson(Lesson): Builder
+ +addQuiz(Quiz): Builder
+ +addTopic(String): Builder
+ +setMinimumPerformance(int): Builder
+ +build(): Course
+}
+class CourseCreationWizard
+Course +-- Builder
+CourseCreationWizard --> Builder : configures
+Builder ..> Lesson
+Builder ..> Quiz
+Builder ..> Teacher
+@enduml

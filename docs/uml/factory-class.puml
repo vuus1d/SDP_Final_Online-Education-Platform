@@ -1,0 +1,22 @@
+@startuml
+abstract class User
+class Student
+class Teacher
+class Admin
+enum UserRole
+class UserFactory {
+ +createUser(role, name, email): User
+ +createStudent(name, email): Student
+ +createTeacher(name, email): Teacher
+ +createAdmin(name, email): Admin
+}
+class UserService
+User <|-- Student
+User <|-- Teacher
+User <|-- Admin
+UserFactory ..> UserRole
+UserFactory ..> Student : creates
+UserFactory ..> Teacher : creates
+UserFactory ..> Admin : creates
+UserService --> UserFactory
+@enduml

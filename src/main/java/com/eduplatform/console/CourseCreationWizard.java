@@ -8,6 +8,7 @@ import com.eduplatform.model.Quiz;
 import com.eduplatform.model.Teacher;
 import com.eduplatform.service.CourseService;
 import com.eduplatform.service.UserService;
+import com.eduplatform.facade.EducationPlatformFacade;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -24,12 +25,14 @@ public class CourseCreationWizard {
     private final PrintStream out;
     private final UserService userService;
     private final CourseService courseService;
+    private final EducationPlatformFacade facade;
 
-    public CourseCreationWizard(ConsoleInput input, PrintStream out, UserService userService, CourseService courseService) {
+    public CourseCreationWizard(ConsoleInput input, PrintStream out, UserService userService, CourseService courseService, EducationPlatformFacade facade) {
         this.input = input;
         this.out = out;
         this.userService = userService;
         this.courseService = courseService;
+        this.facade = facade;
     }
 
     public void run() {
@@ -39,17 +42,16 @@ public class CourseCreationWizard {
             return;
         }
 
-        Course.Builder builder = courseService.newCourseBuilder(teacher.get())
-                .setTitle(input.readNonBlank("Course title: "))
-                .setDescription(input.readLine("Course description: "))
-                .setDuration(input.readInt(String.format("Duration in hours (%d-%d): ",
-                        Course.MIN_DURATION_HOURS, Course.MAX_DURATION_HOURS),
-                        Course.MIN_DURATION_HOURS, Course.MAX_DURATION_HOURS))
-                .setDifficultyLevel(chooseDifficulty());
-        addLessons(builder);
-        addQuizzes(builder);
-
-        Course course = courseService.addCourse(builder.build());
+        Course course = facade.createCourse(teacher.get().getId(), builder -> {
+            builder.setTitle(input.readNonBlank("Course title: "))
+                    .setDescription(input.readLine("Course description: "))
+                    .setDuration(input.readInt(String.format("Duration in hours (%d-%d): ", Course.MIN_DURATION_HOURS, Course.MAX_DURATION_HOURS), Course.MIN_DURATION_HOURS, Course.MAX_DURATION_HOURS))
+                    .setDifficultyLevel(chooseDifficulty());
+            String topics = input.readLine("Topics (comma-separated, optional): ");
+            for (String topic : topics.split(",")) if (!topic.isBlank()) builder.addTopic(topic);
+            builder.setMinimumPerformance(input.readInt("Minimum readiness score (0-100): ", 0, 100));
+            addLessons(builder); addQuizzes(builder);
+        });
         out.println("Course created successfully: " + course);
         out.printf("  %d lesson(s), %d quiz(zes)%n", course.getLessons().size(), course.getQuizzes().size());
     }

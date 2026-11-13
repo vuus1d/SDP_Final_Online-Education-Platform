@@ -1,0 +1,31 @@
+@startuml
+class EducationPlatformFacade {
+ +registerUser(role, name, email): User
+ +createCourse(teacherId, configure): Course
+ +enroll(studentId, courseId)
+ +recommend(studentId, limit)
+ +addMaterials(courseId, materials)
+ +enableCertificate(courseId)
+ +submitQuiz(studentId, courseId, quizTitle, answers): Grade
+ +grades(studentId)
+ +notifications(studentId)
+ +progress(studentId, courseId): CourseProgress
+ +requestCertificate(studentId, courseId)
+}
+class UserService
+class CourseService
+class QuizService
+class GradeService
+class NotificationService
+class RecommendationService
+interface CourseComponent
+EducationPlatformFacade --> UserService
+EducationPlatformFacade --> CourseService
+EducationPlatformFacade --> QuizService
+EducationPlatformFacade --> GradeService
+EducationPlatformFacade --> NotificationService
+EducationPlatformFacade --> RecommendationService
+EducationPlatformFacade --> CourseComponent : decorates
+QuizService --> GradeService : one grade event
+GradeService --> NotificationService : observer event
+@enduml

@@ -48,6 +48,8 @@ public class DemoDataLoader {
         Course javaCourse = courseService.addCourse(buildJavaCourse(teacher));
         courseService.enroll(nurasyl, javaCourse);
         courseService.enroll(aigerim, javaCourse);
+        nurasyl.setInterests(java.util.Set.of("java", "programming"));
+        aigerim.setInterests(java.util.Set.of("java", "oop"));
         loaded = true;
     }
 
@@ -63,6 +65,7 @@ public class DemoDataLoader {
         return courseService.newCourseBuilder(teacher)
                 .setTitle("Java Programming")
                 .setDescription("Learn Java from basics to OOP")
+                .addTopic("java").addTopic("programming").addTopic("oop")
                 .addLesson(new Lesson("Introduction to Java", "JDK, JVM and your first program", 45))
                 .addLesson(new Lesson("Variables and Types", "Primitive types, strings and operators", 60))
                 .addLesson(new Lesson("Classes and Objects", "Encapsulation, constructors and methods", 90))

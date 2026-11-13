@@ -1,0 +1,36 @@
+@startuml
+actor Presenter
+participant ConsoleMenu
+participant EducationPlatformFacade as Facade
+participant UserFactory
+participant Course.Builder as Builder
+participant CourseService
+participant RecommendationService as Recommendations
+participant CourseDecorator as Decorator
+participant QuizService
+participant GradeService
+participant StudentNotificationObserver as Observer
+Presenter -> ConsoleMenu : register teacher and student
+ConsoleMenu -> Facade : registerUser(...)
+Facade -> UserFactory : create by role
+Presenter -> ConsoleMenu : create course with lessons and quiz
+ConsoleMenu -> Facade : createCourse(teacher, builder config)
+Facade -> CourseService : newCourseBuilder(teacher)
+CourseService -> Builder : set fields, add lessons/quizzes, build
+Facade -> CourseService : addCourse(course)
+Presenter -> ConsoleMenu : set interests / recommend
+ConsoleMenu -> Facade : recommend(student)
+Facade -> Recommendations : rank canonical Courses
+Presenter -> ConsoleMenu : enroll and decorate
+ConsoleMenu -> Facade : enroll / add materials / enable certificate
+Facade -> Decorator : wrap canonical Course
+Presenter -> ConsoleMenu : submit quiz
+ConsoleMenu -> Facade : submitQuiz(...)
+Facade -> QuizService : calculate score
+QuizService -> GradeService : recordGrade(Grade)
+GradeService -> Observer : publish once
+Observer --> ConsoleMenu : student notification stored
+Presenter -> ConsoleMenu : complete lessons / request certificate
+ConsoleMenu -> Facade : progress / requestCertificate
+Facade --> ConsoleMenu : progress and eligible certificate
+@enduml

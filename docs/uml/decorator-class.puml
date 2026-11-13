@@ -1,0 +1,23 @@
+@startuml
+interface CourseComponent {
+ +course(): Course
+ +materials(): List<LearningMaterial>
+ +certificateEnabled(): boolean
+ +issueCertificate(Student, progressPercent): Optional<Certificate>
+}
+class BaseCourse
+abstract class CourseDecorator
+class AdditionalMaterialsDecorator
+class CertificateDecorator
+class Course
+class Student
+CourseComponent <|.. BaseCourse
+CourseComponent <|.. CourseDecorator
+CourseDecorator <|-- AdditionalMaterialsDecorator
+CourseDecorator <|-- CertificateDecorator
+BaseCourse --> Course : wraps, never copies
+CourseDecorator o--> CourseComponent : delegates
+CertificateDecorator --> Student : enrollment required
+note bottom of CertificateDecorator : explicit request + 100% activity progress;
+same student receives same certificate on repeat
+@enduml

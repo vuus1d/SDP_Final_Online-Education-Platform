@@ -1,0 +1,26 @@
+@startuml
+actor Student
+participant ConsoleMenu
+participant EducationPlatformFacade
+participant QuizService
+participant GradeService
+participant StudentNotificationObserver
+participant CourseProgress
+participant CertificateDecorator
+Student -> ConsoleMenu : choose Complete Quiz
+ConsoleMenu -> EducationPlatformFacade : submitQuiz(student, course, answers)
+EducationPlatformFacade -> QuizService : submitQuiz(...)
+QuizService -> GradeService : recordGrade(grade)
+GradeService -> StudentNotificationObserver : onGradePublished(grade)
+StudentNotificationObserver -> Student : receiveNotification
+QuizService --> EducationPlatformFacade : saved Grade
+EducationPlatformFacade --> ConsoleMenu : Grade
+Student -> ConsoleMenu : finish remaining lessons, request certificate
+ConsoleMenu -> EducationPlatformFacade : progress(student, course)
+EducationPlatformFacade --> ConsoleMenu : actual completion percent
+ConsoleMenu -> EducationPlatformFacade : requestCertificate(student, course)
+EducationPlatformFacade -> CertificateDecorator : issueCertificate(student, progress)
+CertificateDecorator -> CertificateDecorator : check enrollment and 100%; reuse prior issuance
+CertificateDecorator --> EducationPlatformFacade : Certificate or empty
+EducationPlatformFacade --> ConsoleMenu : result
+@enduml

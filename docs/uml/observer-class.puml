@@ -1,0 +1,25 @@
+@startuml
+interface GradeSubject {
+ +subscribe(GradeObserver)
+ +unsubscribe(GradeObserver)
+ +notifyObservers(Grade)
+}
+interface GradeObserver { +onGradePublished(Grade) }
+class GradeService {
+ +recordGrade(Grade)
+ +getGradesForStudent(Student)
+}
+class StudentNotificationObserver {
+ -student: Student
+ +onGradePublished(Grade)
+}
+class NotificationService
+class Grade
+class Student
+GradeSubject <|.. GradeService
+GradeObserver <|.. StudentNotificationObserver
+GradeService o--> "*" GradeObserver
+GradeService --> Grade : saves/publishes
+StudentNotificationObserver --> Student : notifies matching student
+NotificationService --> GradeService : subscribe/unsubscribe
+@enduml

@@ -1,0 +1,63 @@
+@startuml
+package "com.eduplatform.model" {
+ class Course
+ class Student
+ class Grade
+ class User
+ class Teacher
+ class Quiz
+}
+package "com.eduplatform.builder" {
+ class "Course.Builder" as Builder
+}
+package "com.eduplatform.factory" { class UserFactory }
+package "com.eduplatform.observer" {
+ interface GradeSubject
+ interface GradeObserver
+ class GradeService
+ class StudentNotificationObserver
+}
+package "com.eduplatform.recommendation" {
+ interface RecommendationStrategy
+ class InterestBasedRecommendationStrategy
+ class PerformanceBasedRecommendationStrategy
+ class RecommendationService
+}
+package "com.eduplatform.decorator" {
+ interface CourseComponent
+ class BaseCourse
+ abstract class CourseDecorator
+ class AdditionalMaterialsDecorator
+ class CertificateDecorator
+}
+package "com.eduplatform.facade" { class EducationPlatformFacade }
+package "com.eduplatform.service" { class UserService; class CourseService; class QuizService; class NotificationService }
+package "com.eduplatform.console" { class ConsoleMenu }
+package "com.eduplatform" { class Main }
+RecommendationStrategy <|.. InterestBasedRecommendationStrategy
+RecommendationStrategy <|.. PerformanceBasedRecommendationStrategy
+RecommendationService --> RecommendationStrategy
+CourseComponent <|.. BaseCourse
+CourseComponent <|.. CourseDecorator
+CourseDecorator <|-- AdditionalMaterialsDecorator
+CourseDecorator <|-- CertificateDecorator
+BaseCourse --> Course
+GradeSubject <|.. GradeService
+GradeObserver <|.. StudentNotificationObserver
+GradeService --> Grade
+StudentNotificationObserver --> Student
+Builder --> Course
+UserFactory --> User
+CourseService --> Builder
+QuizService --> GradeService
+NotificationService --> GradeService
+EducationPlatformFacade --> UserService
+EducationPlatformFacade --> CourseService
+EducationPlatformFacade --> QuizService
+EducationPlatformFacade --> GradeService
+EducationPlatformFacade --> NotificationService
+EducationPlatformFacade --> RecommendationService
+EducationPlatformFacade --> CourseComponent
+ConsoleMenu --> EducationPlatformFacade
+Main --> ConsoleMenu
+@enduml

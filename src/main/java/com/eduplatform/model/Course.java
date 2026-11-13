@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.Collections;
 
 /**
  * Immutable educational course. Instances can only be created through {@link Course.Builder}
@@ -24,6 +26,9 @@ public final class Course {
     private final List<Quiz> quizzes;
     private final int durationHours;
     private final DifficultyLevel difficultyLevel;
+    private final Set<String> topics;
+    private final int minimumPerformance;
+    private final boolean available;
 
     private Course(Builder builder) {
         this.id = builder.id.trim();
@@ -34,6 +39,9 @@ public final class Course {
         this.quizzes = List.copyOf(builder.quizzes);
         this.durationHours = builder.durationHours;
         this.difficultyLevel = builder.difficultyLevel;
+        this.topics = Collections.unmodifiableSet(new LinkedHashSet<>(builder.topics));
+        this.minimumPerformance = builder.minimumPerformance;
+        this.available = builder.available;
     }
 
     public static Builder builder() {
@@ -72,6 +80,10 @@ public final class Course {
         return difficultyLevel;
     }
 
+    public Set<String> getTopics() { return topics; }
+    public int getMinimumPerformance() { return minimumPerformance; }
+    public boolean isAvailable() { return available; }
+
     public boolean containsQuiz(Quiz quiz) {
         return quizzes.contains(quiz);
     }
@@ -107,6 +119,9 @@ public final class Course {
         private final List<Quiz> quizzes = new ArrayList<>();
         private Integer durationHours;
         private DifficultyLevel difficultyLevel;
+        private final Set<String> topics = new LinkedHashSet<>();
+        private int minimumPerformance;
+        private boolean available = true;
 
         private Builder() {
         }
@@ -154,6 +169,18 @@ public final class Course {
         public Builder setDifficultyLevel(String difficultyLevel) {
             return setDifficultyLevel(DifficultyLevel.fromString(difficultyLevel));
         }
+
+        public Builder addTopic(String topic) {
+            if (topic == null || topic.isBlank()) throw new IllegalArgumentException("Topic must not be blank");
+            topics.add(topic.trim().toLowerCase(Locale.ROOT));
+            return this;
+        }
+        public Builder setMinimumPerformance(int score) {
+            if (score < 0 || score > 100) throw new IllegalArgumentException("Minimum performance must be between 0 and 100");
+            minimumPerformance = score;
+            return this;
+        }
+        public Builder setAvailable(boolean value) { available = value; return this; }
 
         /**
          * Validates the collected data and creates the course.

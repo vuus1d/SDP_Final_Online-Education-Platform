@@ -1,46 +1,44 @@
-# EduPlatform
+# Online Education Platform
 
-EduPlatform is an online education platform with a console interface, written in Java.
-Students enroll in courses, study lessons and complete quizzes. Teachers create courses. Students are notified about their grades.
+An in-memory Java 21 console application demonstrating six coordinated design patterns.
 
-The project demonstrates design patterns as a team assignment.
-This branch contains **Builder** (course creation), **Factory** (user creation) and **Observer** (grade notifications).
-See [docs/DESIGN_PATTERNS.md](docs/DESIGN_PATTERNS.md) and [docs/TEAMMATE_INTEGRATION.md](docs/TEAMMATE_INTEGRATION.md).
+## Run
 
-## Requirements
+Requirements: JDK 21+ and Maven 3.9+.
 
-- JDK 17 or newer
-- Maven 3.9+ (IntelliJ IDEA bundles one)
-
-## Build, test and run
-
-```bash
-mvn test                                  # run all tests
-mvn package                               # build target/eduplatform-1.0-SNAPSHOT.jar
+```sh
+mvn clean verify
+mvn package
 java -jar target/eduplatform-1.0-SNAPSHOT.jar
 ```
 
-In IntelliJ IDEA, open the project as a Maven project and run `com.eduplatform.Main`.
+In IntelliJ IDEA, import this directory as a Maven project and run `com.eduplatform.Main`.
+Select **12. Load Demo Data** for a quick presentation, then use the recommendation, course, quiz, notification, progress, and certificate menu actions.
 
-For a quick demonstration, choose **12. Load Demo Data** first.
+## Patterns
 
-## Running the demonstrations
-
-| Entry point | Shows |
+| Pattern | Production classes |
 |---|---|
-| `com.eduplatform.Main` | Integrated interactive application: Factory + Builder + Observer in one workflow |
-| `com.eduplatform.builder.BuilderDemo` | Builds a course with `Course.Builder` (lessons, quizzes), prints it, shows validation |
-| `com.eduplatform.factory.FactoryDemo` | Creates Student, Teacher and Admin with `UserFactory`, shows types and invalid input handling |
-| `com.eduplatform.observer.ObserverDemo` | Subscribes student observers, publishes grades, shows notification delivery and unsubscribe |
+| Builder | `com.eduplatform.model.Course.Builder`, `CourseCreationWizard` |
+| Factory | `com.eduplatform.factory.UserFactory`, `UserService` |
+| Observer | `GradeSubject`, `GradeService`, `GradeObserver`, `StudentNotificationObserver`, `NotificationService` |
+| Strategy | `RecommendationStrategy`, `InterestBasedRecommendationStrategy`, `PerformanceBasedRecommendationStrategy`, `RecommendationService` |
+| Decorator | `CourseComponent`, `BaseCourse`, `CourseDecorator`, `AdditionalMaterialsDecorator`, `CertificateDecorator` |
+| Facade | `EducationPlatformFacade` |
 
-In IntelliJ IDEA, click the green Run icon next to the `main` method of any of these classes.
-From the command line after `mvn package`, use for example `java -cp target/classes com.eduplatform.observer.ObserverDemo`.
+The production application uses one `Course`, `Student`, and `Grade` model in `com.eduplatform.model`. Recommendation metadata (topics, availability, minimum readiness) is part of the canonical immutable Course and is supported by its Builder. Student interests and completion are stored on the canonical Student; readiness is calculated from actual saved grades. New students with no grades have 0% recorded readiness.
 
-## UML
+Course progress counts completed lessons and quizzes. A certificate requires enrollment, enabled certificate support, and 100% progress. Repeat requests return the same certificate instance/identifier. Repeated quiz attempts may create new grade events; replaying the same Grade object is rejected.
 
-PlantUML sources are in [docs/uml](docs/uml):
+## Team ownership
 
-- `Builder_UML.puml`: Builder pattern (course creation)
-- `Factory_UML.puml`: Factory pattern (user creation)
-- `Observer_UML.puml`: Observer pattern (grade notifications)
-- `eduplatform-architecture.puml`: overall architecture
+- Student A: Builder, Factory, Observer.
+- Student B: Strategy, Decorator, Facade.
+
+The integration branch preserves both feature histories. Tests from Student B's initial independent contracts remain under test sources for compatibility; the production entry point and integrated test use only the canonical `com.eduplatform` application model.
+
+## Tests and docs
+
+`mvn clean verify` runs both teams' JUnit 5 tests plus `IntegratedPatternsTest` and scripted console tests. Architecture, defense notes, PlantUML sources, and a report draft are in `docs/`.
+
+See [Architecture](docs/ARCHITECTURE.md), [Design Patterns](docs/DESIGN_PATTERNS.md), [Defense Guide](docs/DEFENSE_GUIDE.md), and [Report Draft](docs/FINAL_REPORT_DRAFT.md).

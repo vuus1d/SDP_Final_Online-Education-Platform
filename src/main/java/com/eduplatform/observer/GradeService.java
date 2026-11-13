@@ -42,6 +42,7 @@ public class GradeService implements GradeSubject {
     /** Saves the grade and automatically publishes it to every subscribed observer. */
     public void recordGrade(Grade grade) {
         Objects.requireNonNull(grade, "Grade must not be null");
+        if (grades.contains(grade)) throw new IllegalStateException("This grade event was already recorded");
         grades.add(grade);
         notifyObservers(grade);
     }

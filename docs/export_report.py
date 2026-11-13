@@ -10,7 +10,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.platypus import (
     Image, ListFlowable, ListItem, PageBreak, Paragraph, Preformatted,
-    SimpleDocTemplate, Spacer,
+    SimpleDocTemplate,
 )
 
 
@@ -18,21 +18,16 @@ ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
 SOURCE = ROOT / "FINAL_REPORT_DRAFT.md"
 DESTINATION = PROJECT / "output" / "pdf" / "FINAL_REPORT_DRAFT.pdf"
-UML = PROJECT / "docs" / "uml" / "rendered"
-DIAGRAMS = [
-    ("Builder", "builder-class.png"),
-    ("Factory", "factory-class.png"),
-    ("Observer", "observer-class.png"),
-    ("Strategy", "strategy-class.png"),
-    ("Decorator", "decorator-class.png"),
-    ("Facade", "facade-class.png"),
-    ("Overall Architecture", "overall-architecture.png"),
-    ("End-to-End Sequence", "end-to-end-sequence.png"),
-]
 
 styles = getSampleStyleSheet()
 styles.add(ParagraphStyle(name="Cover", parent=styles["Title"], alignment=TA_CENTER,
-                          textColor=colors.HexColor("#17365D"), spaceAfter=18))
+                          fontSize=29, leading=36, textColor=colors.HexColor("#17365D"),
+                          spaceBefore=80, spaceAfter=22))
+styles.add(ParagraphStyle(name="CoverSubtitle", parent=styles["Heading1"], alignment=TA_CENTER,
+                          fontSize=17, leading=22, textColor=colors.HexColor("#24527A"),
+                          spaceAfter=48))
+styles.add(ParagraphStyle(name="CoverMeta", parent=styles["BodyText"], alignment=TA_CENTER,
+                          fontSize=12, leading=19, spaceAfter=5))
 styles.add(ParagraphStyle(name="Section", parent=styles["Heading1"], textColor=colors.HexColor("#17365D"),
                           spaceBefore=12, spaceAfter=7, keepWithNext=True))
 styles.add(ParagraphStyle(name="Subsection", parent=styles["Heading2"], textColor=colors.HexColor("#24527A"),
@@ -41,8 +36,6 @@ styles.add(ParagraphStyle(name="BodyReport", parent=styles["BodyText"], leading=
 styles.add(ParagraphStyle(name="CodeReport", fontName="Courier", fontSize=7.5, leading=9.5,
                           backColor=colors.HexColor("#F2F4F7"), borderColor=colors.HexColor("#D8DEE8"),
                           borderWidth=0.5, borderPadding=7, leftIndent=4, rightIndent=4, spaceAfter=9))
-styles.add(ParagraphStyle(name="DiagramTitle", parent=styles["Heading2"], alignment=TA_CENTER,
-                          textColor=colors.HexColor("#17365D"), spaceBefore=8, spaceAfter=10))
 
 
 def inline(text: str) -> str:
@@ -55,7 +48,7 @@ story = []
 bullets = []
 in_code = False
 code_lines = []
-appendix_started = False
+on_cover = True
 for raw in SOURCE.read_text(encoding="utf-8").splitlines():
     line = raw.rstrip()
     if line.startswith("```"):
@@ -69,14 +62,13 @@ for raw in SOURCE.read_text(encoding="utf-8").splitlines():
     if in_code:
         code_lines.append(line)
         continue
-    if line.startswith("## Export and package commands"):
+    if line == "<!-- PAGEBREAK -->":
         if bullets:
             story.append(ListFlowable([ListItem(item) for item in bullets], bulletType="bullet", leftIndent=16))
             bullets.clear()
         story.append(PageBreak())
-        story.append(Paragraph("Appendix — UML diagrams", styles["Section"]))
-        appendix_started = True
-        break
+        on_cover = False
+        continue
     if not line:
         if bullets:
             story.append(ListFlowable([ListItem(item) for item in bullets], bulletType="bullet", leftIndent=16))
@@ -85,29 +77,36 @@ for raw in SOURCE.read_text(encoding="utf-8").splitlines():
     if line.startswith("# "):
         story.append(Paragraph(inline(line[2:]), styles["Cover"]))
     elif line.startswith("## "):
+        if line.startswith("## 6.") or line.startswith("## 7."):
+            story.append(PageBreak())
         story.append(Paragraph(inline(line[3:]), styles["Section"]))
     elif line.startswith("### "):
-        if line[4:] == "Java examples":
+        if (line[4:].endswith("UML") and line[4:] != "Builder UML"):
             story.append(PageBreak())
         story.append(Paragraph(inline(line[4:]), styles["Subsection"]))
     elif line.startswith("- "):
         bullets.append(Paragraph(inline(line[2:]), styles["BodyReport"]))
+    elif line.startswith("!["):
+        if bullets:
+            story.append(ListFlowable([ListItem(item) for item in bullets], bulletType="bullet", leftIndent=16))
+            bullets.clear()
+        match = re.fullmatch(r"!\[([^\]]*)\]\(([^)]+)\)", line)
+        if not match:
+            raise ValueError(f"Invalid Markdown image reference: {line}")
+        image_path = ROOT / match.group(2)
+        if not image_path.exists():
+            raise FileNotFoundError(f"Report image is missing: {image_path}")
+        image = Image(str(image_path), width=165 * mm, height=218 * mm, kind="proportional")
+        image.hAlign = "CENTER"
+        story.append(image)
     else:
-        story.append(Paragraph(inline(line), styles["BodyReport"]))
+        if on_cover:
+            style = styles["CoverSubtitle"] if line.startswith("**Final Project Report**") else styles["CoverMeta"]
+            story.append(Paragraph(inline(line), style))
+        else:
+            story.append(Paragraph(inline(line), styles["BodyReport"]))
 if bullets:
     story.append(ListFlowable([ListItem(item) for item in bullets], bulletType="bullet", leftIndent=16))
-
-for index, (title, filename) in enumerate(DIAGRAMS):
-    path = UML / filename
-    if not path.exists():
-        raise FileNotFoundError(f"Rendered UML image is missing: {path}")
-    if index:
-        story.append(PageBreak())
-    story.append(Paragraph(title, styles["DiagramTitle"]))
-    image = Image(str(path), width=165 * mm, height=220 * mm, kind="proportional")
-    image.hAlign = "CENTER"
-    story.append(image)
-
 
 def footer(canvas, doc):
     canvas.saveState()
